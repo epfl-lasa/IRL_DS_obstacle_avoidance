@@ -44,9 +44,3 @@ strictness: 0"
 	change the setobstacle part
 
 	eigen vector3f [] difference with ()
-
-
-# variables
-
-_gripperObject a dynamically changed variable.. 
-_obstacleCondition is defined at the start of each motion
