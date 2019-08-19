@@ -21,19 +21,12 @@ Du = size(u,2);
 Dx = size(states,2);
 
 % Compute reward.
-% r = reward.r*states(:,reward.idx);
-if reward.idx == 1
-    r = reward.r*(states(:,reward.idx) - 5).^2;
-elseif reward.idx == 2
-    r = reward.r*(states(:,reward.idx) - 3.8).^2;
-end
-% no need to modify the reward    
-    
+r = reward.r*states(:,reward.idx);
+
 if nargout >= 2,
     % Compute gradient.
     drdx = zeros(T,Dx);
-%     drdx(:,reward.idx) = reward.r;
-    drdx(:,reward.idx) = reward.r*2*(states(:,reward.idx) - 5);
+    drdx(:,reward.idx) = reward.r;
     g = permute(gradprod(A,B,permute(drdx,[1 3 2])),[1 3 2]);
 end;
 

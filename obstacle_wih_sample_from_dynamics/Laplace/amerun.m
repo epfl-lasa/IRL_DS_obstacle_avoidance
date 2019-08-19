@@ -2,7 +2,7 @@
 function irl_result = amerun(algorithm_params,mdp,mdp_data,features_pt,...
     features_dyn,example_samples,verbosity)
 
-rng(3);
+rng(1);
 
 % Concatenate features.
 features = [features_dyn features_pt];
@@ -13,11 +13,9 @@ reg_feature = struct('type','reg');
 features = [features reg_feature];
 
 % Create random initial weights.
-theta = randn(length(features),1)*0.01*1e4;
+theta = randn(length(features),1)*0.01;
 theta(1) = 1.0;
 theta(end) = 0.0;
-
-disp(theta)
 
 % Create sum reward.
 reward = struct('type','sum','theta',theta,'features',{features});

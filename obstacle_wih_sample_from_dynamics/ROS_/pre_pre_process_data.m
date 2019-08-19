@@ -1,6 +1,6 @@
-path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/';
+path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/temp/July26/';
 
-path_A = ['Jun_10_01/'; 'Jun_10_02/'; 'Jun_12_01/'; 'Jun_12_02/'];
+path_A = ['1-2/'; '2-3/'; '3-2/'];
 path_B = ['testa1/'; 'testa2/'; 'testb1/'; 'testb2/'; 'testc1/'; 'testc2/'; 'testd1/'; 'testd2/'];
 
 % path_A = ['Jun_10_01/'; 'Jun_10_02/'];

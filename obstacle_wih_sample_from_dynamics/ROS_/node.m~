@@ -1,4 +1,4 @@
-function node(states, ssss, weight_in)
+function node(states, weight_in)
 
 % TRAIN_EVERY_TIME = false;
 TRAIN_EVERY_TIME = true;
@@ -204,7 +204,7 @@ else
     T = length(states);
     states_ = states;
     w = ones(T,1);
-    if nargin > 2
+    if nargin > 1
         w = weight_in;
     end
     str_number_of_demo_until_test = 10;
@@ -284,7 +284,7 @@ end
 j = j +1;
 
 if nargin >= 1
-     return
+    pause(1000)
 end
 
 end

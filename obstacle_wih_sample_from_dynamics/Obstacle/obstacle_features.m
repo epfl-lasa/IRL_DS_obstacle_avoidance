@@ -141,36 +141,8 @@ elseif strcmp(mdp_params.feature_type,'grid')
 elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
     % obstacle feature
     features_pt = cell(1,1);
-    % linear
     features_pt{1} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-                          'width',1.0,'r',2.0);
-    features_pt{2} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
                           'width',0.5,'r',2.0);
-    features_pt{3} = struct('type', 'cartebf', 'pos', [mdp_data.objects(2).pos(:,1), mdp_data.objects(2).pos(:,end)],...
-                            'width', 0.1, 'r', 1.0, 'E', [0.65,0;0,1]);
-    features_pt{4} = struct('type', 'cartebf', 'pos', [mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)], ...
-                            'width', 0.8, 'r', 1.0, 'E', [0.5,0;0,1]);
-    % --
-    
-    % nonlinear
-
-%     features_pt{1} = struct('type','powsum','pos',[5,4],'width',0.1,'r',2.0);
-%     features_pt{2} = struct('type','powsum','pos',[5,4],'width',0.51,'r',1.0);
-%     features_pt{3} = struct('type','powsum','pos',[5,4],'width',100000,'r',1.0);
-
-    % non linear + rbf
-
-%     features_pt{1} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-%                           'width',1.0,'r',2.0);
-%     features_pt{4} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-%                           'width',0.5,'r',2.0);                      
-%     features_pt{3} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-%                           'width',1.5,'r',2.0);
-%     features_pt{2} = struct('type', 'cartebf', 'pos', [mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)], ...
-%                             'width', 0.8, 'r', 1.0, 'E', [0.6,0;0,1]);
-                        
-%     features_pt{4} = struct('type','cartrbf','pos',[mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
-%                           'width',1,'r',2.0, 'E', [0.5, 0; 0, 1]);
     
 %     features_pt{1} = struct('type', 'cartebf', 'pos', [mdp_data.objects(2).pos(:,1), mdp_data.objects(2).pos(:,end)],...
 %                             'width', 0.125, 'r', 1.0, 'E', [0.5,0;0,1]);
@@ -185,22 +157,22 @@ elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
 %     features_pt{6} = struct('type', 'cartebf', 'pos', [mdp_data.objects(3).pos(:,1), mdp_data.objects(3).pos(:,end)],...
 %                             'width', 2.0, 'r', 1.0, 'E', [0.5,0;0,1]);                    
 %       width = linspace(0.3, 2.0, 16);
-    if 0
-%         width = linspace(0.1, 1.5, 10);  % number of 10 is typical value
-        width = 0.8;
-%        axis1 = [0.5, 0.8, 1];
-%         axis1 = [0.6, 0.8, 1.0]; 
-%         axis1 = 0.5;
-        axis1 = [0.1, 0.25, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5];
-        for k = 1:length(axis1)
-            for i = 1:length(width)
-                index = (k-1)*length(width) + i;
-                features_pt{index} = struct('type', 'cartebf', 'pos', [mdp_data.objects(1).pos(:,1), ...
-                                     mdp_data.objects(1).pos(:,end)],...
-                                     'width', width(i), 'r', 1.0, 'E', [axis1(k), 0; 0, 1]);
-            end
+%     width = linspace(0.1, 1.5, 10); 
+    width = [1, 0.6, 0.3]; 
+%    axis1 = [0.5, 0.8, 1];
+%     axis1 = [0.6, 0.8, 1.0]; 
+%     axis1 = [0.6, 1.0]; 
+    axis1 = 1.0;
+%     axis1 = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5];
+    for k = 1:length(axis1)
+        for i = 1:length(width)
+            index = (k-1)*length(width) + i;
+    
+        features_pt{index} = struct('type', 'cartebf', 'pos', [mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,end)],...
+                                'width', width(i), 'r', 1.0, 'E', [axis1(k), 0; 0, 1]);
         end
     end
+    
 %     features_pt{2} = struct('type','cartrbf','pos',[mdp_data.objects(2).pos(:,1), mdp_data.objects(2).pos(:,end)],...
 %                           'width',2.0,'r',2.0);
 %     features_pt{3} = struct('type','cartrbf','pos',[mdp_data.objects(3).pos(:,1), mdp_data.objects(3).pos(:,end)],...
@@ -235,20 +207,18 @@ elseif strcmp(mdp_params.feature_type,'obs')&& mdp_params.fixed_pattern == 3
     if 0
         nn = length(features_pt);
         for k = 1:1
-            i = nn + k -1 ;
+            i = nn + k;
             pos = [mdp_data.objects(1).pos(:,1), mdp_data.objects(1).pos(:,2)];
             features_pt{i} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-                                'r', 1.0, 'E', [0.6,0; 0,1]);
+                                'r', 1.0, 'E', [0.5,0;0,1]);
             features_pt{i+1} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-                                'r', 1.0, 'E', [1,0; 0,1]);
-%             features_pt{i+2} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-%                                 'r', 1.0, 'E', [1,0; 0,1]);
-%             features_pt{i+3} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-%                                 'r', 1.0, 'E', [0.4,0; 0,1.6]);
-%             features_pt{i+1} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-%                                 'r', 1.0, 'E', [2,0;0,1.5]);
-%             features_pt{i+2} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
-%                                 'r', 1.0, 'E', [0.5,0;0,0.5]);
+                                'r', 1.0, 'E', [0.8,0;0,1.1]);
+            features_pt{i+2} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
+                                'r', 1.0, 'E', [0.9,0;0,1.2]);
+            features_pt{i+1} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
+                                'r', 1.0, 'E', [2,0;0,1.5]);
+            features_pt{i+2} = struct('type', 'cartebf', 'pos', pos, 'width', mdp_params.feature_radius,...
+                                'r', 1.0, 'E', [0.5,0;0,0.5]);
         end
     end
     

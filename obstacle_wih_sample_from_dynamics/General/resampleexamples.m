@@ -4,8 +4,8 @@ function [example_samples,test_samples, reward] = resampleexamples(mdp_data, mdp
 
 pllot = 0;
                         
-BOUND_SF = [0.9, 1.6];
-BOUND_RHO = [0, 9.0];
+BOUND_SF = [0.7, 1.65];
+BOUND_RHO = [0, 8.5];
 % the reward is learned reward -                 
 with_dynamics = false;
 gradient_descent = true;
@@ -122,7 +122,7 @@ if gradient_descent
     initu = 0;
     rbest = -Inf;
     tolGrad = 1e-3;
-    maxiter = 10; %30 or 32
+    maxiter = 30; %30 or 32
     alpha = 0.1/3/2; % 1e-3
     gnorm = inf; niter = 0; dx = inf; dxmin = 1e-6;
     T = floor(T*2/2);
@@ -188,7 +188,6 @@ if gradient_descent
 
     if mdp_data.num_obs ~= 3 % TODO
         while and(gnorm >= tolGrad, and(niter <= maxiter, dx >= dxmin))
-            disp('GD')
             u = [ones(T,1)*rho; ones(T,1)*sf];
 
     %         r = -trajectoryreward(u, s, mdp_data, mdp, reward);
@@ -352,9 +351,8 @@ if gradient_descent
     [x, y] = meshgrid(rho_,sf_);
     if pllot
         plot(x,y,'k*')
-        hold off
     end
-    
+    hold off
 end
 
 end

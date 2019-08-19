@@ -1,6 +1,6 @@
 % Run IRL test with specified algorithm and example.
 function test_result = runtest(algorithm,algorithm_params,...
-    mdp,mdp_params,test_params, example_human, weight_input)
+    mdp,mdp_params,test_params, example_human, ss_params)
 
 % test_result - structure that contains results of the test
 % algorithm - string specifying the IRL algorithm to use
@@ -15,10 +15,12 @@ function test_result = runtest(algorithm,algorithm_params,...
 rng(1);
 
 % Set default test parameters.
-test_params = setdefaulttestparams(test_params);
+test_params = setdefaulttestparams(test_params); %sturct
 
 % Construct MDP and features.
 [mdp_data, reward, features_pt, features_dyn] = feval(strcat(mdp,'build'),mdp_params);
+
+weight_input = ss_params.weight;
 
 example_samples = cell(1);
 if nargin > 5
@@ -100,8 +102,13 @@ irl_result = feval(strcat(algorithm,'run'), algorithm_params, mdp, mdp_data,...
 % Evaluate IRL result by resynthesizing trajectories.
 % irl_result.example_samples = example_samples;
 % irl_result.test_samples = test_samples;
+
+% embed some parameters into the struct test_params,
+test_params.num_train_demo = ss_params.num_train_demo;
+test_params.indicator = ss_params.indicator;
+
 [irl_result.example_samples, irl_result.test_samples, b_reward] = ...
-    resampleexamples(mdp_data, mdp, irl_result.reward, reward, test_params,...
+    resampleexamples(mdp_data, mdp, irl_result.reward, reward, test_params,... % mdp is string.
                      example_samples, test_samples, test_params.verbosity);
 
 % Evaluate metrics.
@@ -113,11 +120,8 @@ test_metrics = 0;
 % here make the the true reward to be plotted...
 % b_reward is what changed inside the resanpleexample function
 
-if ~strcmp(algorithm, 'ame')
-    disp(irl_result.reward.features{1,2}.gp.inv_widths)
-else
-    disp(irl_result.reward.theta')
-end
+% disp(irl_result.reward.features{1,2}.gp.inv_widths)
+
 irl_result.reward = b_reward;
 %%%%%%%%%%%
 

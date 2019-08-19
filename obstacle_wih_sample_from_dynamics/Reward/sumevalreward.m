@@ -29,21 +29,21 @@ end
 mdp_data.defergrad = 1;
 deferred = 0;
 
-for i=1:length(reward.theta)
+for i=1:length(reward.theta),
     % Evaluate the components.
-    if nargout >= 7
+    if nargout >= 7,
         [cr,cg,cdrdu,cd2rdudu,cdrdx,cd2rdxdx,cgfull,cHfull] = ...
             feval(strcat(reward.features{i}.type,'evalreward'),...
                   reward.features{i},mdp_data,x,u,states,A,B,dxdu,d2xdudu);
-    elseif nargout >= 5
+    elseif nargout >= 5,
         [cr,cg,cdrdu,cd2rdudu,cdrdx,cd2rdxdx] = ...
             feval(strcat(reward.features{i}.type,'evalreward'),...
                   reward.features{i},mdp_data,x,u,states,A,B);
-    elseif nargout >= 3
+    elseif nargout >= 3,
         [cr,cg,cdrdu,cd2rdudu] = ...
             feval(strcat(reward.features{i}.type,'evalreward'),...
                   reward.features{i},mdp_data,x,u,states,A,B);
-    elseif nargout >= 2
+    elseif nargout >= 2,
         [cr,cg] = ...
             feval(strcat(reward.features{i}.type,'evalreward'),...
                   reward.features{i},mdp_data,x,u,states,A,B);
@@ -51,13 +51,10 @@ for i=1:length(reward.theta)
         cr = ...
             feval(strcat(reward.features{i}.type,'evalreward'),...
                   reward.features{i},mdp_data,x,u,states);
-    end
+    end;
     
     % Add up the components.
     r = r + cr*reward.theta(i);
-%     if i == 5
-%         r = cr*reward.theta(i);
-%     end
     if nargout >= 2,
         if iscell(cg),
             if ~deferred,

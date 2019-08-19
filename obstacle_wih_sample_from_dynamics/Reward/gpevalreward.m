@@ -43,13 +43,6 @@ for f=1:F
     % Save value.
     info.f(:,f) = r;
 
-%     %%%
-%     if f == 4
-%         info.f(:,f) = r;
-%     else
-%         info.f(:,f) = zeros(T,1);
-%     end
-    %%%
     % Save gradients.
     if nargout >= 2
         info.g(:,f,:) = permute(g,[1 3 2]);
@@ -67,7 +60,7 @@ if nargout >= 3
 elseif nargout >= 2
     [K,g] = gpirlgpgrads(zeros(T,1,Du),reward.gp.invK_uu,reward.gp.alpha,info,reward.gp);
 else
-    K = gpirlgpgrads(zeros(T,1,Du), reward.gp.invK_uu, reward.gp.alpha, info, reward.gp);
+    K = gpirlgpgrads(zeros(T,1,Du),reward.gp.invK_uu,reward.gp.alpha,info,reward.gp);
 end
 
 % Compute value.

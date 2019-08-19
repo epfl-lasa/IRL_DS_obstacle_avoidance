@@ -22,7 +22,6 @@ addpath lib_obstacle_avoidance
 addpath new
 addpath ROS_
 addpath result
-addpath result/temp
 
 addpath('/home/swei/Documents/IRL_with_dynamical_system/matlab_gen/msggen')
 

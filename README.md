@@ -74,10 +74,7 @@ Four points
 `$rosrun motion_example moveToDesiredJoints 50 34.7 1.73 -92.2 -1.94 52.8 42.2`    
 `$rosrun motion_example moveToDesiredJoints 44.5 34.7 1.73 -92.2 -1.94 52.8 42.2`    
 `$rosrun motion_example moveToDesiredJoints 55 53.8 5.3 -57.8 -3.1 69.6 40`  
-training
-`$rosrun motion_example moveToDesiredJoints 47.4 35.8 4.8 -90 -1.99 54.5 50.5` 
-`$rosrun motion_example moveToDesiredJoints 44 42.8 3.7 -79.9 -1.48 52.3 50.3` 
-`$rosrun motion_example moveToDesiredJoints 46.7 43 4.61 -85 -0.3 50 48` 
+`$rosrun motion_example moveToDesiredJoints 45.6 39.2 5.38 -88.98 0.986 52.8167 45`  
 
 damping eigen - 90/1000  
 damping eigen - 90/500  
