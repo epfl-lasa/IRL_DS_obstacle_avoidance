@@ -15,9 +15,7 @@ d = bsxfun(@minus,reward.pos,pts);
 
 % Compute value.
 % r = reward.r(1)*exp(-0.5*reward.width*sum(d.^2,2)); 
-% diag(d*d') is same as sum(d.^2,2)
 E = eye(2);
-% E = [0.5,0;0,1];
 r = reward.r(1)*exp(-0.5*reward.width*diag(d*E*d'));
 
 if nargout >= 2

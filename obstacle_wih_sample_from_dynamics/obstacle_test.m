@@ -1,16 +1,13 @@
 % Run example tests on objectworld with fixed "flower petal" reward.
 function [rho, sf] = obstacle_test(a, s, r, example_optimal, test_file_name, ...
-    example_human, ss_params)
-
+    example_human, weight_input, folderName, patht)
+% two_examples --- example_optimal
+two_obstacles = 0;
 % 4 algorithm, 5 tests, 8 restarts
 
-algorithms = {'ame','gpirl','maxent','optv'};
+algorithms = {'ame','gpirl'};
 algorithm_params = {struct(),struct(),struct(),struct()};
-names = {'Linear','Nonlinear','MaxEnt','OptV'};
-colors = {[0 0 0.5],[0 0 0],[0.2 0.8 0.2],[0.8 0.2 0.2]};
-order = [1 2 3 4];
-% disp(names);
-% fprintf(1,'Starting run %i %i %i\n',a,s,r);
+fprintf(1,'Starting run %i %i %i\n',a,s,r);
 
 % Set up constants.
 test_metric_names = metricnames();
@@ -64,31 +61,26 @@ opt_sim.obstacle = []; %no obstacle is defined
 % obs{1}.x0 = [5; 4.15];
 obs{1}.x0 = [5.2; 3.6];
 
-% different pbstacle definition
-str_indicator = ss_params.indicator;
-if (contains(str_indicator, 'AB')) 
-%     obs{1}.a = [1.344; 1.6128];
-    obs{1}.a = [0.95; 1.13];
-%     obs{1}.x0 = [5.2; 3.6];
-    obs{1}.x0 = [5.2; 3.7];
-elseif (contains(str_indicator, 'CD'))  
-%     obs{1}.a = [1.344; 1.6128];
-    obs{1}.a = [1.3; 1.53];
-    obs{1}.x0 = [5.2; 3.5];
-    
-elseif (contains(str_indicator, 'AC'))
-%     obs{1}.a = [1.4; 1.36];
-    obs{1}.a = [1.44; 1.65];
-    obs{1}.x0 = [5.2; 3.8];
-elseif (contains(str_indicator, 'BD'))
-%     obs{1}.a = [1.3; 1.3]; %make x smaller
-%     obs{1}.a = [1.44; 1.48];
-    obs{1}.a = [1.44; 1.65];
-    obs{1}.x0 = [5.2; 3.8];
-end
-
 obs{1}.tailEffect = false; % the tail effect is turned off..
 
+if two_obstacles
+    %obs{1}.a = [1.5; 2.8];
+    %obs{1}.a = [1.0; 3.8];
+    obs{1}.a = [1.1; 1.4];
+    %obs{1}.x0 = [2.95; 4.2 - 2.52 ];
+    obs{1}.x0 = [2.95; 4.2 - 0.6 ];
+    obs{1}.tailEffect = false;
+    
+    obs{2}.tailEffect = false;
+    %obs{2}.x0 = [7.5; 4.2 + 3.3];
+    obs{2}.x0 = [7.5; 4.2 + 0.6];
+    obs{2}.a = obs{1}.a;
+    obs{2}.p = obs{1}.p;
+    obs{2}.partition = obs{1}.partition;
+    obs{2}.sf = obs{1}.sf;
+    obs{2}.th_r = obs{1}.th_r;
+    obs{2}.rho = obs{1}.rho; 
+end
 
 opt_sim.obstacle = obs;
 
@@ -108,7 +100,10 @@ mdp_params = {struct('sensors',2,...
                      'rbf_features',2,...
                      'feature_radius',0.5,...
                      'centers', [0.5 0.4])}; % change to the pattern I defined.
-                 
+if two_obstacles
+    mdp_params{1}.centers = [0.2 0.4; 0.8 0.6];
+    mdp_params{1}.fixed_pattern = 4;
+end
 mdp_params = repmat(mdp_params,1,length(mdp_param_names));
 
 % Prepare test parameters.
@@ -125,11 +120,15 @@ for step=1:length(mdp_params)
     mdp_params{step}.seed = mdp_params{step}.seed+r-1;
 end
 
-% Run single test.
+mdp_params{s}.folder_name = folderName;
+if nargin > 8
+    mdp_params{s}.patht = patht;
+end
+% Run single test.2
 if nargin > 5
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s},...
-                          example_human, ss_params); % the thrid one corresponding to the MDP
+                          example_human, weight_input); % the thrid one corresponding to the MDP
 else
     test_result = runtest(algorithms{a},algorithm_params{a},...
                           world,mdp_params{s},test_params{s});
@@ -140,7 +139,7 @@ end
 %     'mdp_params','mdp_cat_name','mdp_param_names',...
 %     'algorithms','names','colors','order','restarts','test_result');
 
-visualize(test_result, example_human, ss_params)
+visualize(test_result, example_human)
 
 if nargout > 0
     uu = test_result.irl_result.example_samples{1,1}.u(1,:);

@@ -1,7 +1,7 @@
 % Draw single objectworld with specified reward function.
-function obstacle_draw(reward,example_samples,test_samples,mdp_params,mdp_data, ss_params, paper_quality)
+function obstacle_draw(reward,example_samples,test_samples,mdp_params,mdp_data,paper_quality)
 
-if nargin < 7
+if nargin < 6
     paper_quality = 0;
 end
 
@@ -13,8 +13,10 @@ else
     VMARGIN = 1.0;
     HMARGIN = 1.0;
 end
+margin_wsp_low = 3.2;
+margin_wsp_high = 8.5;
 % axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  -VMARGIN  mdp_data.bounds(2)+VMARGIN]);
-axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  3.2  8.5]);
+axis([-HMARGIN  mdp_data.bounds(1)+HMARGIN  margin_wsp_low  margin_wsp_high]);
 if paper_quality
     % Expand axes.
     set(gca,'position',[0 0 1 1]);
@@ -30,9 +32,11 @@ hold on;
 
 % Draw the reward function.
 % Create regular samples.
-STEP_SIZE = 0.2;
-x = -HMARGIN:STEP_SIZE:(mdp_data.bounds(1)+HMARGIN);
-y = -VMARGIN:STEP_SIZE:(mdp_data.bounds(2)+VMARGIN);
+STEP_SIZE = 0.05; % 0.2
+% x = -HMARGIN: STEP_SIZE: (mdp_data.bounds(1)+HMARGIN);
+% y = -VMARGIN: STEP_SIZE: (mdp_data.bounds(2)+VMARGIN);
+x = -HMARGIN: STEP_SIZE: (mdp_data.bounds(1)+HMARGIN);
+y = margin_wsp_low-0.0: STEP_SIZE: (margin_wsp_high+0.0);
 [X,Y] = meshgrid(x,y);
 pts = [X(:) Y(:)];
 R = feval(strcat(reward.type,'evalreward'),reward,mdp_data,[],zeros(size(pts,1),mdp_data.udims),pts * mdp_data.sensor_basis,[],[],[],[]);
@@ -81,80 +85,72 @@ if strcmp(reward.type,'sum')
     end
 end
 
+% path = mdp_params.patht;
+
 % Draw the paths.
 if ~isempty(example_samples)
-     % draw trajectories ... vvv
+    % draw trajectories ... vvv
     if ~paper_quality
-        for i=1:length(test_samples)
-            % Collect all points in this trajectory.
-            % pts = objectworldcontrol(mdp_data,test_samples{i}.s,test_samples{i}.u);
-            %pts = [test_samples{i}.s; pts];
-            pts = test_samples{i}.states;
+    for i=1:length(test_samples)
+        % Collect all points in this trajectory.
+        % pts = objectworldcontrol(mdp_data,test_samples{i}.s,test_samples{i}.u);
+        %pts = [test_samples{i}.s; pts];
+        pts = test_samples{i}.states;
+        
+        % comment the next line to plot successfully when we segement the
+        % path into two parts
+%         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
+        col = [0.5 0.5 0.7];
+        color_list = linspace(0, 1, length(test_samples)+1);
+        % Plot the points.
+        if 0
+            plot(pts(:,1),pts(:,end),'-','color',[color_list(i),0.5,0.7],'marker','.','markersize',14,'linewidth',1.5);
+        else
+%             color1 = [0.4660 0.8 0.1880];
+            color1 = [0, 0, 0];
+            color2 = [1, 0.0, 0.0];
+            sizem = 5;
+            switch i
+                case 1
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','o','markersize',sizem+1,'linewidth',1.5,...
+                        'MarkerFaceColor','m'); 
+                case 2
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','^','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','m'); 
+                case 3
+                    plot(pts(:,1),pts(:,end),'-','color',color1,'marker','v','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','m');    
+                case 4
 
-            % comment the next line to plot successfully when we segement the
-            % path into two parts
-    %         pts = [test_samples{i}.s; pts]; % add the starting point for drawing
-            col = [0.5 0.5 0.7];
-            color_list = linspace(0, 1, length(test_samples)+1);
-            % Plot the points.
-            if 0
-                plot(pts(:,1),pts(:,end),'-','color',[color_list(i),0.5,0.7],'marker','.','markersize',14,'linewidth',1.5);
-            else
-    %             color1 = [0.4660 0.8 0.1880];
-                color1 = [0, 0, 0];
-                color2 = [1, 0.0, 0.0];
-                sizem = 5;
-                switch i
-                    case 1
-                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','o','markersize',sizem+1,'linewidth',1.5,...
-                            'MarkerFaceColor','m'); 
-                    case 2
-                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','^','markersize',sizem,'linewidth',1.5,...
-                            'MarkerFaceColor','m'); 
-                    case 3
-                        plot(pts(:,1),pts(:,end),'-','color',color1,'marker','v','markersize',sizem,'linewidth',1.5,...
-                            'MarkerFaceColor','m');    
-                    case 4
-                        if  ss_params.num_train_demo == 5
-                            plot(pts(:,1),pts(:,end),'-','color',color1,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
-                                'MarkerFaceColor','m');
-%                         elseif ss_params.num_train_demo == 3
-                        else
-                            plot(pts(:,1),pts(:,end),':','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        plot(pts(:,1),pts(:,end),':','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');
+                case 5
+                        plot(pts(:,1),pts(:,end),':','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
                             'MarkerFaceColor','y');
-                        end
-                    case 5
-                        if ss_params.num_train_demo == 5
-                            plot(pts(:,1),pts(:,end),'-','color',color1,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color1,...
-                                'MarkerFaceColor','m');
-%                         elseif ss_params.num_train_demo == 3
-                        else
-                            plot(pts(:,1),pts(:,end),':','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
-                                'MarkerFaceColor','y');
-                        end
-                    case 6
-                        plot(pts(:,1),pts(:,end),'-','color',color2,'marker','o','markersize',sizem+1,'linewidth',1.5,...
-                            'MarkerFaceColor','y'); 
-                    case 7
-                        plot(pts(:,1),pts(:,end),'-','color',color2,'marker','^','markersize',sizem,'linewidth',1.5,...a
-                            'MarkerFaceColor','y'); 
-                    case 8
-                        plot(pts(:,1),pts(:,end),'-','color',color2,'marker','v','markersize',sizem,'linewidth',1.5,...
-                            'MarkerFaceColor','y');    
-                    case 9
-                        plot(pts(:,1),pts(:,end),'-','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
-                            'MarkerFaceColor','y');
-                    case 10
-                        plot(pts(:,1),pts(:,end),'-','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
-                            'MarkerFaceColor','y');  
-                end
+
+                case 6
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','o','markersize',sizem+1,'linewidth',1.5,...
+                        'MarkerFaceColor','y'); 
+                case 7
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','^','markersize',sizem,'linewidth',1.5,...a
+                        'MarkerFaceColor','y'); 
+                case 8
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','v','markersize',sizem,'linewidth',1.5,...
+                        'MarkerFaceColor','y');    
+                case 9
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','d','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');
+                case 10
+                    plot(pts(:,1),pts(:,end),'-','color',color2,'marker','s','markersize',sizem,'linewidth',1.5,'MarkerEdgeColor',color2,...
+                        'MarkerFaceColor','y');  
             end
-            % Plot starting point.
-            %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
-            % Plot ending point.
-            fig_end = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10,'linewidth',2);
-            set(get(get(fig_end,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
         end
+        % Plot starting point.
+        %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
+        % Plot ending point.
+        fig_end = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10,'linewidth',2);
+        set(get(get(fig_end,'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+    end
     end
     
     for i=1:length(example_samples)
@@ -172,11 +168,11 @@ if ~isempty(example_samples)
         else
             width_factor = 1;
         end
-        % this three lines are commented for ploting
+%         this three lines are commented for ploting
         plot(pts(:,1),pts(:,end),'-','color',col,'marker','.','markersize',14*width_factor,'linewidth',1.5);
         
         % Plot starting point.
-        %plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
+%         plot(pts(1,1),pts(1,end),'color',col,'marker','o','markersize',5,'linewidth',2);
         % Plot ending point.
         
         fig = plot(pts(end,1),pts(end,end),'color',col,'marker','x','markersize',10*width_factor,'linewidth',2);
@@ -184,9 +180,22 @@ if ~isempty(example_samples)
     end
 end
 
-N = ss_params.weight_legend;
+% legend('Computed','1','2','3','4','5','6','7','8','9','10')
+% N = [0.67, 0.51, 0.83, 0.59, 0.00, 0.58, 0.30, 0.00, 0.00, ...
+% 0.85];
+% N = 1 - N;
+% path = '/home/swei/Documents/IRL_with_dynamical_system/obstacle_wih_sample_from_dynamics/result/eight_subject/Jun_12_01/testb2/';
 
-legendCell = cellstr(num2str(N, 'Weight=%-g'));
+%%
+% enable the next two lines for figure plot -- but seems like we won't need
+% it anymore
+% N = load([path, 'weight_input.mat']);
+% N = N.weight_input;
+
+
+N = length(test_samples);
+%%
+legendCell = cellstr(num2str(N', 'Weight=%-g'));
 legendCell = [legendCell; cellstr('IRL generated')];
 legend(legendCell,'FontSize',14)
 
@@ -197,50 +206,26 @@ height = 530;
 set(gcf,'position',[x0,y0,width,height])
 set(gca,'xtick',[])
 
-str_indicator = ss_params.indicator;
-if (contains(ss_params.indicator, 'AB')) 
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'AB without object')
-    else
-        title(gca, 'AB with object')
-    end
-    movegui('northeast')
-elseif (contains(ss_params.indicator, 'BD')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'BD without object')
-    else
-        title(gca, 'BD with object')
-    end
-    movegui('northwest')
-elseif (contains(ss_params.indicator, 'CD')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'CD without object')
-    else
-        title(gca, 'CD with object')
-    end
-    movegui('southeast')
-elseif (contains(ss_params.indicator, 'AC')) 
-    
-    if (~contains(str_indicator, 'obj'))
-        title(gca, 'AC without object')
-    else
-        title(gca, 'AC with object')
-    end
-    movegui('southwest')
-end
-
-drawnow;
 % my_title_pre = strcat('result/example/demo_', num2str(length(test_samples)));
 % my_title_pre = strcat('result/weights_test/test_far_4_close_3/demo_', num2str(length(test_samples)));
-% my_title_pre = strcat('result/Tuning_obs_axis/demo_', num2str(length(test_samples)));
-my_title_pree = strcat(ss_params.folderName, str_indicator);
+% my_title_pre = strcat('result/eight_subject/demo_', num2str(length(test_samples)));
+my_title_pree = strcat(mdp_params.folder_name, 'demo_');
 my_title_pre = strcat(my_title_pree, num2str(length(test_samples)));
 my_title = strcat(my_title_pre, '.jpg');
-
 % my_title_fig = strcat(my_title_pre, '.fig');
 saveas(gcf, my_title)
+% savefig(my_title_fig)
+
+
+% enable the next line for figure plot -- but seems like we won't need
+% it anymore
+% my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(NN), '_', imgn);
+% my_title_pree = strcat('result/eight_subject/plot/', 'sub_', num2str(N), '_', imgn);
+% my_title_pree = strcat('result/temp', 'sub_', num2str(N), '_', imgn);
+
+% my_title = strcat(my_title_pree, '.jpg');
+% my_title_fig = strcat(my_title_pree, '.fig');
+% saveas(gcf, my_title)
 % savefig(my_title_fig)
 
 % Finished.

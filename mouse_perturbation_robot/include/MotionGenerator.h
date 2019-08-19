@@ -63,7 +63,7 @@ class MotionGenerator
     private:
     //===========================================
     // 1 or 2 for obstacle number
-    const int _numObstacle = 1;
+    const int _numObstacle = 2;
 
     // random generate rho and sf at each end of trails
     // const bool _randomInsteadIRL = true;
