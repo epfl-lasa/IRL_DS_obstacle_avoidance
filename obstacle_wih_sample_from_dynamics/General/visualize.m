@@ -1,7 +1,7 @@
 % Visualize MDP state space with given IRL test solution.
-function visualize(test_result, example_human, render)
+function visualize(test_result, example_human, ss_params, render)
 
-if nargin < 3
+if nargin < 4
     render = 0;
 end
     
@@ -13,8 +13,7 @@ if render
 else
 %     w = 1800;
     w = 900;
-%     h = 900;
-    h = 320;
+    h = 900;
     figure('Position',[20 50 w h]);
 end
 hold on;
@@ -47,7 +46,7 @@ end
 
 feval(strcat(test_result.mdp,'draw'),test_result.irl_result.reward,...
     test_result.irl_result.example_samples, test_result.example_samples, test_result.mdp_params,...
-    test_result.mdp_data);
+    test_result.mdp_data, ss_params);
 
 % test_result.irl_result.example_samples
 

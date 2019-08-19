@@ -239,14 +239,11 @@ for i = 1:8
      end
 end
 
-bool_ = false;
-if (aaa >= str_number_of_demo_until_test)
-    bool_ = true;
-end
+bool_ = 
 
 % if (TRAIN_EVERY_TIME ||  length(ss) > str_number_of_demo_until_test )
 % if (TRAIN_EVERY_TIME ||  aaa > str_number_of_demo_until_test )
-if (TRAIN_EVERY_TIME ||  (bool_ && length(ss) > str_number_of_demo_until_test)  )
+if (TRAIN_EVERY_TIME ||  aaa > str_number_of_demo_until_test )
     % [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, w);
     [rho, sf] = obstacle_test(2,1,1,1,'sim', ss, ss_params);
     fprintf('testing num %4.2f \n', nnn)

@@ -56,7 +56,7 @@ addpaths.m
 `$roslaunch lwr_simple_example sim.launch` OR
 `$roslaunch lwr_simple_example real.launch`
 
-`$roslaunch lwr_fri lwr_fri_console.launch` typye control inside and starting working with the robotarm
+`$roslaunch lwr_fri lwr_fri_console` typye control inside and starting working with the robotarm
 
 `$roslaunch spacenav_node classic.launch`
 `$rostopic echo -c /spacenav/joy`
@@ -70,6 +70,15 @@ addpaths.m
 downward end effector 
 `$rosrun motion_example moveToDesiredJoints 42 45 0 -75 0 55 20` to solve the shaking problem  
 `$rosrun motion_example moveToDesiredJoints 43.1 53 0.15 -76 -0.1 53.5 20`  
+Four points  
+`$rosrun motion_example moveToDesiredJoints 50 34.7 1.73 -92.2 -1.94 52.8 42.2`    
+`$rosrun motion_example moveToDesiredJoints 44.5 34.7 1.73 -92.2 -1.94 52.8 42.2`    
+`$rosrun motion_example moveToDesiredJoints 55 53.8 5.3 -57.8 -3.1 69.6 40`  
+training
+`$rosrun motion_example moveToDesiredJoints 47.4 35.8 4.8 -90 -1.99 54.5 50.5` 
+`$rosrun motion_example moveToDesiredJoints 44 42.8 3.7 -79.9 -1.48 52.3 50.3` 
+`$rosrun motion_example moveToDesiredJoints 46.7 43 4.61 -85 -0.3 50 48` 
+
 damping eigen - 90/1000  
 damping eigen - 90/500  
 rot stiff - 15/50  
@@ -155,3 +164,28 @@ matlab
 setenv('ROS_MASTER_URI', 'http://')
 getenv()
 setenv('ROS_IP','')
+
+
+## Gripper
+rosrun robotiq_c_model_control CModelTcpNode.py 192.168.1.11
+https://github.com/epfl-lasa/lasa-wiki/wiki/Robotiq-gripper
+
+
+rosrun gripper_c Gripper_c
+
+
+## Some links
+
+'https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToMatrix/examples/index.htm'
+
+'https://www.ethz.ch/content/dam/ethz/special-interest/mavt/robotics-n-intelligent-systems/rsl-dam/documents/RobotDynamics2016/RD2016script.pdf'
+
+
+
+## message
+
+$ rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 0.1, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'
+
+rostopic pub /topic package/msg_type '{x: 1, y: 2, c: a, type: string}'
+
+rostopic pub /eeg_weight std_msgs/String 'data: "0.5"'

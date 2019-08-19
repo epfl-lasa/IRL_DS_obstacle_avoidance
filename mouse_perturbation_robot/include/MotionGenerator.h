@@ -8,7 +8,6 @@
 #include "Eigen/Eigen"
 #include <iostream>
 #include <string.h>
-#include <sstream>
 
 #include "ros/ros.h"
 #include "std_msgs/Int8.h"
@@ -29,9 +28,6 @@
 #include "mouse_perturbation_robot/MouseMsgPassIRL.h"
 #include "DSObstacleAvoidance.h"
 #include <mouse_perturbation_robot/obstacleAvoidance_paramsConfig.h>
-#include "Utils.h"
-#include "math.h"
-#include <grasp_interface/rs_gripper_interface.h>
 
 #define MAX_XY_REL 350                    // Max mouse velocity [-]
 #define MIN_X_REL 200                    // Min mouse velocity used as threshold [-]
@@ -40,27 +36,26 @@
 
 #define PERTURBATION_VELOCITY 15.05f      // PErturbation velocity
 #define MAX_PERTURBATION_OFFSET 0.1f      // Max perturnation offset [m]
-#define MIN_PERTURBATION_OFFSET 0.01f     // Min perturbation offset [m]
-#define TARGET_TOLERANCE 0.01f            // Tolerance radius for reaching a target [m]
+#define MIN_PERTURBATION_OFFSET 0.05f     // Min perturbation offset [m]
+#define TARGET_TOLERANCE 0.05f            // Tolerance radius for reaching a target [m]
 #define NB_TARGETS 4                      // Number of targets [-]
 #define MAX_RHO 8.0f //8
 #define MIN_RHO 0.5f
 #define MAX_ETA 1.6f //1.6
 #define MIN_ETA 0.8f
 #define BINARY_INPUT
-#define NUM_LIMIT 5
-#define PI 3.14159265
-#define ANGLE_OFFSET -45
+#define NUM_LIMIT 30000 // 6 --- use the first 5 as training ... then later five to test is converge..
 
-// #define PROTOCAL_DEBUG // the hyper parameter is disabled in gripper
+// #define PROTOCAL_DEBUG
 
 // #define DELAY_INTRODUCE 10
 
-#define PROTOCAL_RELEASE_INCREASE // the hyper parameter is disabled in gripper branch
+#define PROTOCAL_RELEASE_INCREASE // disable the y and z mouse (disable the PROTOCAL_DEBUG) (Experiment)
 
 // #define LISTEN_EEG // Test the brain activity decoder 
 
-#define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
+// [enable during subject testing]
+// #define LISTEN_EEG_OPTI // Test use EEG only at the end of trail, [during the trail, we still use the mouse).
 
 class MotionGenerator 
 {
@@ -89,7 +84,7 @@ class MotionGenerator
     //===========================================
 
     // State phase enum
-    // INIT: Initial phase where the user gMatrix3fet used to what a clean motion is
+    // INIT: Initial phase where the user get used to what a clean motion is
     // CLEAN_MOTION: Clean motion phase
     // PAUSE: Phase reached when a target is reached to slow down the robot
     // JERKY_MOTION: PErturbation phase
@@ -98,14 +93,11 @@ class MotionGenerator
     // There is four targets available. Only A and B are used for the back and forth motion
     enum Target {A = 0, B = 1, C = 2, D = 3};
 
-    enum ObstacleCondition {AB = 0, AC = 1, BD = 2, CD = 3};
-
-    std::string strIndicator[8] = {"AB", "ABobj", "CD", "CDobj", "AC", "ACobj", "BD", "BDobj"};
-
     // ROS variables
     ros::NodeHandle _n;
     ros::Rate _loopRate;
     float _dt;
+    float dt; // for iiwa, position from velocity
 
     // Subscribers and publishers declaration
     ros::Subscriber _subRealPose;           // Subscribe to robot current pose
@@ -118,9 +110,7 @@ class MotionGenerator
     ros::Subscriber _subMessageEEG;         // EEG
     ros::Subscriber _subMessageWeight;      // Sub the weight from EEG side
     ros::Subscriber _subMessageEEGOpti;
-    ros::Subscriber _subGripper;            // sub the gripper out
-    ros::Subscriber _subGripperStatus;      // gripper status
-
+    
     ros::Publisher _pubDesiredOrientation;  // Publish desired orientation
     ros::Publisher _pubDesiredTwist;        // Publish desired twist
     ros::Publisher _pubFeedBackToParameter; // Publish feed back to rho and sf generator
@@ -130,7 +120,6 @@ class MotionGenerator
     ros::Publisher _pubCommand;
     ros::Publisher _pubDebugTrigger;
     ros::Publisher _pubWeights;
-    ros::Publisher _pubGripper;             // pub the gripper in
     
     // Messages declaration
     geometry_msgs::Pose _msgRealPose;
@@ -143,6 +132,7 @@ class MotionGenerator
     geometry_msgs::PoseArray _msgRealPoseArray;
     sensor_msgs::Joy _msgSpacenav;
     std_msgs::Float64MultiArray _msgCommand;
+    geometry_msgs::Pose _msgCommandiiwa;
     std_msgs::Float32 _msgWeight;
 
     // passing the message (mouse)
@@ -160,7 +150,6 @@ class MotionGenerator
     Eigen::Vector3f _vd;        // Desired velocity [m/s] (3x1)
     Eigen::Vector4f _qd;        // Desired end effector quaternion (4x1)
     Eigen::Vector3f _omegad;    // Desired angular velocity [rad/s] (3x1)
-    Eigen::Vector4f _quaternion;
 
     // Motion variables
     Eigen::Vector3f _xp;                              // Last position in clean motion [m] (3x1)
@@ -187,12 +176,7 @@ class MotionGenerator
     int _eventLogger;
     uint8_t _brainLogger;                             // Sending the result of brain decoding
     std_msgs::Int8 _eventLoggerP;
-    Eigen::Matrix3f _rotR;
-    Eigen::Matrix3f _rot;
-    Eigen::Matrix3f _previousRot;
-    Eigen::Matrix3f _currentRot;
-    Eigen::Matrix3f _initRot;
-    
+
     //Booleans
     bool _firstRealPoseReceived;      // Monitor the first robot pose update
     bool _firstMouseEventReceived;    // Monitor the first mouse event recevied
@@ -212,8 +196,6 @@ class MotionGenerator
     bool _delayIntroduce;             // if the delay is introduced
     bool _ifWeightEEGReveive;         // 
     bool _boolReverseMsgEEGOpti;      // 
-    bool _boolGripperSend;
-    bool _gripperObject;                // 1 is close. 0 is no object.
 
     // Arduino related variables
     int farduino;
@@ -223,7 +205,9 @@ class MotionGenerator
     int _msgEEG;                      // The binary EEG signal
     int _msgEEGOpti;
     int temp_counter_test;
-    int _obstacleCondition;
+
+    // iiwa
+    Eigen::Vector3f _desiredNextPosition;
 
     // Other variables
     static MotionGenerator* me;   // Pointer on the instance
@@ -233,11 +217,6 @@ class MotionGenerator
     Target _currentTarget;        // Current target
     Target _previousTarget;       // Previous target
     
-    float _currentAngle;
-    float _targetAngle;
-    float _previousAngle;
-
-
     std_msgs::Float32 _msg_para_up;
     Obstacle _obs;
     Obstacle _obs2;
@@ -256,31 +235,18 @@ class MotionGenerator
     double _rhosfSave [20][2];
     double init_sf;
     double init_rho;
-    double _measureAngle;
 
     int _delayInterval;
     geometry_msgs::Pose _msgMouseI;
 
     std_msgs::String _msgMessageEEG;
     std_msgs::String _msgMessageEEGOpti;
-    std_msgs::Int8 _msgGripper;
-    std_msgs::Int8 _msgGripperSub;
-    int _intGripper;
-    int _intGripperSub;
 
     bool _indicatorRand;
 
     int _numOfErrorTrails;
     int _numOfCorrectTrails;
     int temp_counter;
-
-    std::string _ss8;
-
-    robotiq_s_model_control::SModel_robot_input gripperStatus;     /// The status returned from the gripper
-
-    double _updatedRhoEta [2][8];
-    int _indexEightCond;
-    int _amoutOfTrailEightCond [8];
 
   public:
     // Class constructor
@@ -372,15 +338,8 @@ class MotionGenerator
 
     void subMessageEEGOpti(const std_msgs::String::ConstPtr& msg);
 
-    // Gripper 
-    void subGripper(const std_msgs::Int8::ConstPtr& msg);
-
-    void subGripperStatus(const robotiq_s_model_control::SModel_robot_input& msg);
-
     // Dyncmic reconfigure the rho and eta by mouse
     void changeRhoEta(int indcator);
-
-    void endEffectorAngleChange();
 
 };
 
