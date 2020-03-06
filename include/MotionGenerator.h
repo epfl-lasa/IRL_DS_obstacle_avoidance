@@ -14,6 +14,8 @@
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/Float64MultiArray.h"
+
+
 #include "std_msgs/String.h"
 #include "geometry_msgs/Pose.h"
 #include <geometry_msgs/PoseArray.h>
@@ -75,6 +77,8 @@ class MotionGenerator
     // to configer using in my PC or in the kuka lwr PC (the MouseInterface node is not working with kuka lwr PC.)
     const bool _boolSpacenav = 1; // in my PC, do not use the spacenav | while in the lab pc, use the space navigator
 
+    const bool _isNewMouseProt = 1;     // for receiving values from the mouse that are between [-1,1] (integers)
+
     // arduino
     const bool  _useArduino = true; 
 
@@ -103,7 +107,8 @@ class MotionGenerator
     ros::Subscriber _subRealPose;           // Subscribe to robot current pose
     ros::Subscriber _subRealTwist;          // Subscribe to robot current pose
     ros::Subscriber _subMouse;              // Subscribe to foot mouse data
-    ros::Subscriber _subSpaceNav;              // Subscribe to space nav 3d mouse
+    ros::Subscriber _subSpaceNav;           // Subscribe to space nav 3d mouse
+    ros::Subscriber _subMouseNewProt;       // Subscribe to space nav 3d mouse
     ros::Subscriber _subIRL;                // Subscribe to the parameter generating node
     ros::Subscriber _subPositionObs;        // Subscribe to the obstacle position
     ros::Subscriber _subPositionTar;        // Subscribe to the target position
@@ -134,6 +139,9 @@ class MotionGenerator
     std_msgs::Float64MultiArray _msgCommand;
     geometry_msgs::Pose _msgCommandiiwa;
     std_msgs::Float32 _msgWeight;
+
+    // variable to hold the direction of the spacenavigator (mouse)
+    Eigen::Vector3f _mouseDirection;
 
     // passing the message (mouse)
     mouse_perturbation_robot::MouseMsgPassIRL _msgMouseIRL;
@@ -291,6 +299,9 @@ class MotionGenerator
 
     // Callback to update mouse data
     void updateMouseData(const mouse_perturbation_robot::MouseMsg::ConstPtr& msg);
+
+    // Callback to update mouse direction
+    void updateSpacenavDirection(const std_msgs::Float32MultiArray::ConstPtr& array);
 
     // Callback to update the mouse data by use the space navigator
     void updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg);

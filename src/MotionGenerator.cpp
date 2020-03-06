@@ -132,6 +132,8 @@ bool MotionGenerator::init()
 	_currentTarget = Target::A;
 	#endif
 
+	_mouseDirection << 0.0f, 0.0f, 0.0f;
+
 	temp_counter_test = 0;	
 
 	Eigen::Vector3f temp;
@@ -166,6 +168,10 @@ bool MotionGenerator::init()
 	if(_boolSpacenav)
 		_subSpaceNav = _n.subscribe("/spacenav/joy", 10, &MotionGenerator::updateSpacenavData, this, ros::TransportHints().reliable().tcpNoDelay());
 	
+	if(_isNewMouseProt){
+		_subMouseNewProt = _n.subscribe("/spacenav/direction", 10, &MotionGenerator::updateSpacenavDirection, this, ros::TransportHints().reliable().tcpNoDelay());
+	}
+
 	#ifdef LISTEN_EEG
 		// _subBrainAct = _n.subscribe("/brain_decoder", 1, &MotionGenerator::updateBrainData, this, ros::TransportHints().reliable().tcpNoDelay());
 		_subMessageEEG = _n.subscribe("/eeg_trigger", 1, &MotionGenerator::subMessageEEG, this, ros::TransportHints().reliable().tcpNoDelay());
@@ -216,9 +222,9 @@ bool MotionGenerator::init()
 
 	std::string filename;
 	// filename =  "/home/swei/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
-	filename =  "/home/shupeng/catkin_ws/src/mouse_perturbation_robot/informationKUKA" + std::to_string(f) + ".txt"; //swei
+	filename =  "/home/shupeng/catkin_ws/src/mouse_perturbation_robot/logfiles/informationKUKA" + std::to_string(f) + ".txt"; //swei
 	_outputFile.open(filename.c_str());
-	_outputFile << "NEW EXPERIMENT\n";
+	_outputFile << "NEW EXPERIMENT | Date: " << std::to_string(f) <<"\n";
 
 	// Catch CTRL+C event with the callback provided
 	signal(SIGINT,MotionGenerator::stopNodeCallback);
@@ -1046,7 +1052,12 @@ void MotionGenerator::processMouseEvents() // process mouse events
   {
   	// std::cout<< "here ====="<< 0.0f <<std::endl;
 	// std::cout<< "here ====="<< _msgSpacenav <<std::endl;
-  	processCursorEvent(-350.0f*_msgSpacenav.axes[1]/0.69f, -350.0f*_msgSpacenav.axes[0]/0.69f, -350.0f*_msgSpacenav.axes[2]/0.69f, true);
+	if(_isNewMouseProt){
+		processCursorEvent(-350.0f*_mouseDirection[0]/0.69f, -350.0f*_mouseDirection[1]/0.69f, -350.0f*_mouseDirection[0]/0.69f, true);
+	}else{
+		processCursorEvent(-350.0f*_msgSpacenav.axes[1]/0.69f, -350.0f*_msgSpacenav.axes[0]/0.69f, -350.0f*_msgSpacenav.axes[2]/0.69f, true);	
+	}
+  	
     // std::cerr << _mouseVelocity.transpose() << std::endl;
 	// std::cerr << "a" << std::endl;
   	// std::cerr << _msgSpacenav.axes[0] << " " << _msgSpacenav.axes[1] << " " << _msgSpacenav.axes[2] << std::endl;
@@ -1057,8 +1068,9 @@ void MotionGenerator::processMouseEvents() // process mouse events
 }
 
 
-void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, bool newEvent)
-{
+void MotionGenerator::processCursorEvent(float relX, float relY, float relZ, bool newEvent){
+
+	// std::cout << relX << ", " << relY << ", " << relZ << std::endl;
 	//std::cout<< "here ====="<<std::endl;
 	if(!newEvent) // No new event received
 	{
@@ -1268,6 +1280,12 @@ void MotionGenerator::updateSpacenavData(const sensor_msgs::Joy::ConstPtr& msg)
   	}
 }	
 
+
+void MotionGenerator::updateSpacenavDirection(const std_msgs::Float32MultiArray::ConstPtr& array){
+	_mouseDirection[0] = array-> data[0];
+	_mouseDirection[1] = array-> data[1];
+	_mouseDirection[2] = array-> data[2];
+}
 
 void MotionGenerator::updateIRLParameter(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
